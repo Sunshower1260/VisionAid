@@ -1,13 +1,13 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import { useRouter } from "expo-router"; // <-- hook
+import { useRouter } from "expo-router"; 
 
 export default function MainScreen() {
-  const router = useRouter(); // <-- tạo router
+  const router = useRouter();
 
   const handlePress = (label: string) => {
     if (label === "Camera") {
-      router.push("/CameraScreen"); // <-- dùng push thay cho navigate
+      router.push("/CameraScreen"); 
     } else {
       Alert.alert(`Bạn đã bấm nút: ${label}`);
     }

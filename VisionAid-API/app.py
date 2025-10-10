@@ -13,8 +13,20 @@ from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+from base64 import b64decode
+from io import BytesIO
+from fastapi import FastAPI, Request
+from PIL import Image
+import base64
+import traceback
 
 from vision_to_speech import VTS
+
+from fastapi.staticfiles import StaticFiles
+
+app = FastAPI()
+app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+
 
 # Load environment variables
 def load_env():
@@ -137,7 +149,7 @@ async def upload_image(
             shutil.copyfileobj(file.file, buffer)
         
         # Generate output filename
-        output_filename = f"{unique_id}.wav"
+        output_filename = f"{unique_id}.mp3"
         output_path = OUTPUT_DIR / output_filename
         
         # Get VTS instance
@@ -247,7 +259,7 @@ async def process_conversion_async(task_id: str, file: UploadFile, voice: str, w
         conversion_tasks[task_id]["progress"] = 30
         
         # Generate output filename
-        output_filename = f"{unique_id}.wav"
+        output_filename = f"{unique_id}.mp3"
         output_path = OUTPUT_DIR / output_filename
         
         # Get VTS instance
@@ -386,3 +398,48 @@ if __name__ == "__main__":
         reload=True,
         log_level="info"
     )
+
+from fastapi.responses import JSONResponse
+
+@app.post("/upload_base64")
+async def upload_base64(request: Request):
+    try:
+        data = await request.json()
+        print("📩 Received keys:", data.keys())
+
+        if "image" not in data:
+            print("❌ Missing key 'image'")
+            return JSONResponse(content={"error": "Missing 'image' field in request body"}, status_code=400)
+
+        image_base64 = data["image"]
+        img_bytes = base64.b64decode(image_base64)
+
+        unique_id = str(uuid.uuid4())
+        upload_path = UPLOAD_DIR / f"{unique_id}.jpg"
+        output_path = OUTPUT_DIR / f"{unique_id}.mp3"
+
+        with open(upload_path, "wb") as f:
+            f.write(img_bytes)
+
+        vts = get_vts_instance()
+        result = vts.convert(str(upload_path), str(output_path))
+
+        os.remove(upload_path)
+
+        if result["success"]:
+            resp = {
+                "success": True,
+                "text_result": result["text_result"],
+                "audio_url": f"http://192.168.1.13:7000/outputs/{unique_id}.mp3",
+            }
+        else:
+            resp = {"success": False, "error": result["error"]}
+
+        print("✅ Sending response:", resp)
+        return JSONResponse(content=resp)
+
+    except Exception as e:
+        print("🔥 ERROR OCCURRED 🔥")
+        traceback.print_exc()
+        return JSONResponse(content={"success": False, "error": str(e)}, status_code=500)
+
