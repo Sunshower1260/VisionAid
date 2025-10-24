@@ -5,7 +5,7 @@ app.post("/analyze", async (req, res) => {
 
   try {
     // Gửi ảnh đến Python FastAPI server (VisionAid)
-    const response = await fetch("http://192.168.1.13:7000/upload_base64", {
+    const response = await fetch("http://192.168.1.9:7000/upload_base64", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image }),
