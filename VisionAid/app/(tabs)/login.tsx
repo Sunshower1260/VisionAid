@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -34,6 +35,9 @@ export default function LoginScreen() {
 
       const data = await res.json();
       if (res.ok) {
+        await AsyncStorage.setItem("userEmail", email);
+        await AsyncStorage.setItem("userId", data.user.id.toString());
+        await AsyncStorage.setItem("userRole", data.user.role);
         router.push("/(tabs)/main");
       } else {
         alert(data.error);

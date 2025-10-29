@@ -1,11 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   Image,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import {
@@ -13,28 +12,86 @@ import {
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from "expo-location";
+import * as Speech from "expo-speech";
 
 export default function MainScreen() {
   const router = useRouter();
+  const [userEmail, setUserEmail] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [lastPressed, setLastPressed] = useState<{ [key: string]: number }>({});
 
-  const handlePress = (label: string) => {
-    if (label === "Camera") {
-      router.push("/CameraScreen");
-    } else if (label === "SOS") {
-      router.push("/VolunteerScreen");
+  useEffect(() => {
+    const fetchUser = async () => {
+      const email = await AsyncStorage.getItem("userEmail");
+      const id = await AsyncStorage.getItem("userId");
+      const role = await AsyncStorage.getItem("userRole"); // member / vip / user
+      if (email) setUserEmail(email);
+      if (id) setUserId(id);
+      if (role) setUserRole(role);
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const updateLocation = async () => {
+      if (!userId || !userRole) return;
+      if (userRole !== "member" && userRole !== "vip") return;
+
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") return;
+
+        const location = await Location.getCurrentPositionAsync({});
+        const { latitude, longitude } = location.coords;
+
+        await fetch("http://192.168.1.9:3000/api/volunteer/update-location", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, latitude, longitude }),
+        });
+      } catch (err) {
+        console.error("Auto update location error:", err);
+      }
+    };
+
+    updateLocation();
+  }, [userId, userRole]);
+
+  const handlePress = async (label: string) => {
+    const now = Date.now();
+    const DOUBLE_PRESS_DELAY = 1500; // 1.5 giây
+
+    if (lastPressed[label] && now - lastPressed[label] < DOUBLE_PRESS_DELAY) {
+      // Nhấn lần 2 -> thực hiện chức năng
+      if (label === "Nhận diện vật thể") {
+        router.push("/CameraScreen");
+      } else if (label === "Trợ giúp khẩn cấp") {
+        const role = await AsyncStorage.getItem("userRole");
+        if (role === "member" || role === "vip") {
+          router.push("/VolunteerDashboard");
+        } else {
+          router.push("/VolunteerScreen");
+        }
+      } else if (label === "Membership") {
+        router.push("/MembershipScreen");
+      }
     } else {
-      Alert.alert(`Bạn đã bấm nút: ${label}`);
+      // Nhấn lần 1 -> đọc giọng nói cảnh báo
+      Speech.speak(`Bạn đã bấm vào ${label}. Bấm lại lần nữa để truy cập tính năng.`);
+      setLastPressed((prev) => ({ ...prev, [label]: now }));
     }
   };
 
   const panGesture = Gesture.Pan().onEnd((event) => {
+    "worklet";
     const { translationY } = event;
-
-    if (translationY < -50) {
-      router.push("/CameraScreen");
-    } else if (translationY > 50) {
-      router.push("/VolunteerScreen");
-    }
+    if (translationY === undefined) return;
+    if (translationY < -50) runOnJS(router.push)("/CameraScreen");
+    else if (translationY > 50) runOnJS(router.push)("/VolunteerScreen");
   });
 
   return (
@@ -44,14 +101,14 @@ export default function MainScreen() {
           {/* Greeting */}
           <View style={styles.header}>
             <Text style={styles.greeting}>Xin chào,</Text>
-            <Text style={styles.name}>Đăng Duy!</Text>
+            <Text style={styles.name}>{userEmail || "Người dùng"}</Text>
           </View>
 
           {/* Feature Cards */}
           <View style={styles.cardContainer}>
             <TouchableOpacity
               style={styles.card}
-              onPress={() => handlePress("Camera")}
+              onPress={() => handlePress("Nhận diện vật thể")}
             >
               <View style={styles.cardIcons}>
                 <Image
@@ -72,7 +129,7 @@ export default function MainScreen() {
 
             <TouchableOpacity
               style={styles.card}
-              onPress={() => handlePress("SOS")}
+              onPress={() => handlePress("Trợ giúp khẩn cấp")}
             >
               <View style={styles.cardIcons}>
                 <Image
@@ -105,7 +162,7 @@ export default function MainScreen() {
                   resizeMode="contain"
                 />
               </View>
-              <Text style={styles.cardText}>Mua gói thành viên</Text>
+              <Text style={styles.cardText}>Trở thành tình nguyện viên</Text>
             </TouchableOpacity>
           </View>
         </View>

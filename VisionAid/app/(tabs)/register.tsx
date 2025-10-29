@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Image,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -16,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -23,7 +25,7 @@ export default function RegisterScreen() {
 
   const onRegister = async () => {
     if (!email || !password) {
-      alert("Vui lòng nhập đầy đủ thông tin");
+      Alert.alert("Lỗi", "Vui lòng nhập đầy đủ email và mật khẩu");
       return;
     }
     setLoading(true);
@@ -31,17 +33,18 @@ export default function RegisterScreen() {
       const res = await fetch("http://192.168.1.9:3000/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, phoneNumber }),
       });
       const data = await res.json();
       if (res.ok) {
-        alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        Alert.alert("✅ Thành công", "Đăng ký thành công! Vui lòng đăng nhập.");
         router.back();
       } else {
-        alert(data.error || "Đăng ký thất bại");
+        Alert.alert("❌ Thất bại", data.error || "Đăng ký thất bại");
       }
     } catch (err) {
-      alert("Lỗi kết nối API");
+      console.error(err);
+      Alert.alert("❌ Lỗi kết nối API", "Vui lòng thử lại sau");
     } finally {
       setLoading(false);
     }
@@ -78,7 +81,13 @@ export default function RegisterScreen() {
           />
 
           {/* Số điện thoại */}
-          <TextInput style={styles.input} placeholder="Số điện thoại" />
+          <TextInput
+            style={styles.input}
+            placeholder="Số điện thoại (tùy chọn)"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            keyboardType="phone-pad"
+          />
 
           {/* Mật khẩu */}
           <View style={styles.passwordContainer}>
@@ -143,25 +152,10 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  container: {
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 20,
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 30,
-    padding: 24,
-    alignItems: "center",
-  },
-  logo: {
-    width: 60,
-    height: 60,
-    marginBottom: 10,
-  },
+  gradient: { flex: 1 },
+  container: { flexGrow: 1, justifyContent: "center", padding: 20 },
+  card: { backgroundColor: "#fff", borderRadius: 30, padding: 24, alignItems: "center" },
+  logo: { width: 60, height: 60, marginBottom: 10 },
   cameraContainer: {
     position: "absolute",
     top: 40,
@@ -174,88 +168,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  plusCircle: {
-    position: "absolute",
-    bottom: 6,
-    right: 6,
-    backgroundColor: "#004AAD",
-    borderRadius: 10,
-    padding: 2,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#000",
-    textAlign: "left",
-    width: "100%",
-    marginBottom: 20,
-  },
-  input: {
-    width: "100%",
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#000",
-    marginBottom: 14,
-    backgroundColor: "#fff",
-    fontSize: 15,
-  },
-  passwordContainer: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: "#000",
-    marginBottom: 10,
-  },
-  eyeButton: {
-    paddingHorizontal: 12,
-  },
-  terms: {
-    fontSize: 13,
-    color: "#000",
-    marginTop: 8,
-    textAlign: "left",
-  },
-  link: {
-    color: "#004AAD",
-    fontSize: 14,
-    textDecorationLine: "underline",
-    alignSelf: "flex-end",
-    marginTop: 6,
-  },
-  buttonWrapper: {
-    width: "100%",
-    marginTop: 16,
-  },
-  registerButton: {
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  registerButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  loginContainer: {
-    flexDirection: "row",
-    marginTop: 16,
-  },
-  loginText: {
-    fontSize: 14,
-    color: "#000",
-  },
-  loginLink: {
-    fontSize: 14,
-    fontWeight: "bold",
-    textDecorationLine: "underline",
-    color: "#000",
-  },
+  plusCircle: { position: "absolute", bottom: 6, right: 6, backgroundColor: "#004AAD", borderRadius: 10, padding: 2 },
+  title: { fontSize: 22, fontWeight: "bold", color: "#000", textAlign: "left", width: "100%", marginBottom: 20 },
+  input: { width: "100%", padding: 14, borderRadius: 10, borderWidth: 1, borderColor: "#000", marginBottom: 14, backgroundColor: "#fff", fontSize: 15 },
+  passwordContainer: { width: "100%", flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 10, borderColor: "#000", marginBottom: 10 },
+  eyeButton: { paddingHorizontal: 12 },
+  terms: { fontSize: 13, color: "#000", marginTop: 8, textAlign: "left" },
+  link: { color: "#004AAD", fontSize: 14, textDecorationLine: "underline", alignSelf: "flex-end", marginTop: 6 },
+  buttonWrapper: { width: "100%", marginTop: 16 },
+  registerButton: { borderRadius: 12, paddingVertical: 14, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 4 },
+  registerButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  loginContainer: { flexDirection: "row", marginTop: 16 },
+  loginText: { fontSize: 14, color: "#000" },
+  loginLink: { fontSize: 14, fontWeight: "bold", textDecorationLine: "underline", color: "#000" },
 });

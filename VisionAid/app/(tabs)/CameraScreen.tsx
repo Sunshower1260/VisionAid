@@ -1,13 +1,22 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { Audio } from "expo-av";
+import * as Speech from "expo-speech";
 
 export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isResultShown, setIsResultShown] = useState(false); 
 
   if (!permission) return <View />;
   if (!permission.granted) {
@@ -22,57 +31,90 @@ export default function CameraScreen() {
   }
 
   const takePhoto = async () => {
+    if (isResultShown) {
+      setPhoto(null);
+      setIsResultShown(false);
+      return;
+    }
+
     if (!cameraRef.current) return;
 
     setLoading(true);
-    const photoData = await cameraRef.current.takePictureAsync({ base64: true });
-    setPhoto(photoData.uri);
-
     try {
-  const res = await fetch("http://192.168.1.13:3000/analyze", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image: photoData.base64 }),
-  });
+      console.log("📸 Bắt đầu chụp ảnh...");
+      const photoData = await cameraRef.current.takePictureAsync({ base64: true });
+      console.log("✅ Ảnh đã chụp:", photoData.uri);
+      setPhoto(photoData.uri);
 
-  // test raw response gpt
-  const text = await res.text();
-  console.log("📥 Raw response:", text);
+      console.log("📤 Gửi ảnh lên server...");
+      const res = await fetch("http://192.168.1.9:3000/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: photoData.base64 }),
+      });
 
-  // parse sang JSON  
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = { error: "Invalid JSON", raw: text };
-  }
+      console.log("📥 Nhận phản hồi thô...");
+      const textResponse = await res.text();
+      console.log("🧾 Raw response:", textResponse);
 
-  console.log("✅ Parsed JSON:", data);
+      let data;
+      try {
+        data = JSON.parse(textResponse);
+      } catch (parseErr) {
+        console.error("❌ Lỗi parse JSON:", parseErr);
+        Alert.alert("Lỗi phản hồi", "Server trả về dữ liệu không hợp lệ");
+        return;
+      }
 
-  if (data.audioUrl) {
-    const { sound } = await Audio.Sound.createAsync({ uri: data.audioUrl });
-    await sound.playAsync();
-  } else {
-    alert("Không nhận được âm thanh từ server.\n" + JSON.stringify(data));
-  }
-} catch (err) {
-  if (err instanceof Error) {
-    console.error("Upload failed:", err.message);
-    alert(`Lỗi khi gửi ảnh đến server: ${err.message}`);
-  } else {
-    console.error("Upload failed:", err);
-    alert("Lỗi không xác định khi gửi ảnh đến server.");
-  }
-}
- finally {
-  setLoading(false);
-}
+      console.log("✅ JSON hợp lệ:", data);
 
+      if (data.success && data.text) {
+        let contentToSpeak = data.text.trim();
+
+        const match = data.text.match(/Nội dung[:：]\s*(.*)/s);
+        if (match && match[1]) contentToSpeak = match[1].trim();
+
+        if (/^Thể loại:/i.test(contentToSpeak) && !match) {
+          console.warn("⏭️ Không có nội dung thực tế để đọc.");
+          setIsResultShown(true);
+          return;
+        }
+
+        console.log("🔊 Gọi Speech.speak với nội dung:", contentToSpeak);
+        Speech.stop();
+
+        Speech.speak(contentToSpeak, {
+          language: "vi-VN",
+          rate: 1.0,
+          pitch: 1.0,
+          onStart: () => console.log("🎙️ Bắt đầu đọc..."),
+          onDone: () => {
+            console.log("✅ Đọc xong!");
+            setIsResultShown(true); // ✅ Cho phép bấm “Chụp lại”
+          },
+          onError: (e) => {
+            console.error("❌ Lỗi khi đọc:", e);
+            setIsResultShown(true);
+          },
+        });
+      } else {
+        console.warn("⚠️ Server không trả về text:", data);
+        Alert.alert("Phân tích thất bại", data.error || "Không nhận được nội dung từ server");
+        setIsResultShown(true);
+      }
+    } catch (err: any) {
+      console.error("❌ Lỗi khi gửi ảnh:", err);
+      Alert.alert("Lỗi", err.message || "Không thể gửi ảnh đến server");
+      setIsResultShown(true);
+    } finally {
+      setLoading(false);
+      console.log("📷 Hoàn tất xử lý.");
+    }
   };
 
   return (
     <View style={{ flex: 1 }}>
-      {photo ? (
+      {photo && isResultShown ? (
         <Image source={{ uri: photo }} style={{ flex: 1 }} />
       ) : (
         <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
@@ -85,8 +127,14 @@ export default function CameraScreen() {
         </View>
       )}
 
-      <TouchableOpacity style={styles.button} onPress={takePhoto} disabled={loading}>
-        <Text style={styles.text}>📸 Chụp & Gửi</Text>
+      <TouchableOpacity
+        style={[styles.button, loading && { opacity: 0.5 }]}
+        onPress={takePhoto}
+        disabled={loading}
+      >
+        <Text style={styles.text}>
+          {isResultShown ? "📸 Chụp lại & Phân tích" : "📸 Chụp & Phân tích"}
+        </Text>
       </TouchableOpacity>
     </View>
   );

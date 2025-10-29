@@ -10,7 +10,7 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       {/* Logo */}
       <Image
-        source={require("../../assets/images/placeholder.png")} // đổi đúng tên file logo của bạn
+        source={require("../../assets/images/placeholder.png")} 
         style={styles.logo}
         resizeMode="contain"
       />
@@ -34,7 +34,7 @@ export default function WelcomeScreen() {
         >
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => router.push("/register")} // 👉 điều hướng sang RegisterScreen
+            onPress={() => router.push("/register")} 
           >
             <Text style={styles.buttonTextBold}>Bắt đầu - Đăng ký</Text>
           </TouchableOpacity>
