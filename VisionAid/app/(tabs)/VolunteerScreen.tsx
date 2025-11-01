@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
-import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import * as Speech from "expo-speech";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Volunteer = {
   id: number;
@@ -57,7 +57,7 @@ export default function VolunteerScreen() {
       const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
 
-      const response = await fetch("http://192.168.1.9:3000/api/volunteer/request", {
+      const response = await fetch("https://visionaid-be.onrender.com/api/volunteer/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ latitude, longitude }),
@@ -96,7 +96,7 @@ export default function VolunteerScreen() {
       const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
 
-      const response = await fetch("http://192.168.1.9:3000/api/family/send-location", {
+      const response = await fetch("https://visionaid-be.onrender.com/api/family/send-location", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, latitude, longitude }),

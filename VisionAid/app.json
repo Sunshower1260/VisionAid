@@ -1,22 +1,29 @@
 {
   "expo": {
     "name": "VisionAid",
-    "slug": "VisionAid",
+    "slug": "visionaid",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "VisionAid",
+    "scheme": "visionaid",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Ứng dụng cần truy cập camera để phân tích đồ vật trước mặt người dùng",
-        "NSMicrophoneUsageDescription": "Ứng dụng cần truy cập microphone nếu bạn muốn ghi âm video"
-      }
+        "NSMicrophoneUsageDescription": "Ứng dụng cần truy cập microphone nếu bạn muốn ghi âm video",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.vuaga1260.visionaid"
     },
     "android": {
-      "permissions": ["CAMERA", "RECORD_AUDIO"],
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "CAMERA",
+        "RECORD_AUDIO"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -24,7 +31,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.vuaga1260.visionaid"
     },
     "web": {
       "output": "static",
@@ -43,11 +51,18 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "21a66df7-8650-4ead-af9d-386fce6ea386"
+      }
     }
   }
 }

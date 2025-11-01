@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
   ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 type BlindLocation = {
@@ -26,7 +26,7 @@ export default function BlindLocationScreen() {
     setLoading(true);
     try {
       const userId = "3"; // thay bằng userId thật nếu cần
-      const res = await fetch(`http://192.168.1.9:3000/api/family/last-location/${userId}`);
+      const res = await fetch(`https://visionaid-be.onrender.com/api/family/last-location/${userId}`);
       const data = await res.json();
 
       if (data.success && data.location) {

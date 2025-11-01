@@ -1,21 +1,21 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from "expo-location";
+import { useRouter } from "expo-router";
+import * as Speech from "expo-speech";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
   Image,
   StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Location from "expo-location";
-import * as Speech from "expo-speech";
 
 export default function MainScreen() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function MainScreen() {
         const location = await Location.getCurrentPositionAsync({});
         const { latitude, longitude } = location.coords;
 
-        await fetch("http://192.168.1.9:3000/api/volunteer/update-location", {
+        await fetch("https://visionaid-be.onrender.com/api/volunteer/update-location", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId, latitude, longitude }),

@@ -1,15 +1,15 @@
-import React, { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Speech from "expo-speech";
+import React, { useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -47,7 +47,7 @@ export default function CameraScreen() {
       setPhoto(photoData.uri);
 
       console.log("📤 Gửi ảnh lên server...");
-      const res = await fetch("http://192.168.1.9:3000/analyze", {
+      const res = await fetch("https://visionaid-be.onrender.com/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: photoData.base64 }),

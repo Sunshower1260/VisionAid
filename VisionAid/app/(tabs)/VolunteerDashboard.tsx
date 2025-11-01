@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from "react-native";
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type VolunteerRequest = {
   id: number;
@@ -16,7 +16,7 @@ export default function VolunteerDashboard() {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`http://192.168.1.9:3000/api/volunteer/requests/${volunteerId}`);
+      const response = await fetch(`https://visionaid-be.onrender.com/api/volunteer/requests/${volunteerId}`);
       const data = await response.json();
       if (data.success) setRequests(data.requests);
     } catch (error) {
@@ -26,7 +26,7 @@ export default function VolunteerDashboard() {
 
   const handleAccept = async (id: number) => {
     try {
-      const response = await fetch("http://192.168.1.9:3000/api/volunteer/accept", {
+      const response = await fetch("https://visionaid-be.onrender.com/api/volunteer/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestId: id }),

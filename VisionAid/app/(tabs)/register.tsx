@@ -1,18 +1,18 @@
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  Image,
-  Alert,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -30,7 +30,7 @@ export default function RegisterScreen() {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://192.168.1.9:3000/register", {
+      const res = await fetch("https://visionaid-be.onrender.com/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, phoneNumber }),
@@ -78,6 +78,7 @@ export default function RegisterScreen() {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            placeholderTextColor="#1A1A1A"
           />
 
           {/* Số điện thoại */}
@@ -87,6 +88,7 @@ export default function RegisterScreen() {
             value={phoneNumber}
             onChangeText={setPhoneNumber}
             keyboardType="phone-pad"
+            placeholderTextColor="#1A1A1A"
           />
 
           {/* Mật khẩu */}
@@ -97,6 +99,7 @@ export default function RegisterScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
+              placeholderTextColor="#1A1A1A"
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}

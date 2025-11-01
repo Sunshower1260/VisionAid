@@ -1,19 +1,19 @@
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Image,
-  ActivityIndicator,
-  ScrollView,
-  Switch,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ export default function LoginScreen() {
   const onLogin = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://192.168.1.9:3000/login", {
+      const res = await fetch("https://visionaid-be.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -100,11 +100,6 @@ export default function LoginScreen() {
               <Ionicons name={secureText ? "eye-off-outline" : "eye-outline"} size={22} color="#111827" />
             </TouchableOpacity>
           </View>
-
-          {/* Forgot */}
-          <TouchableOpacity style={styles.forgotWrap}>
-            <Text style={styles.forgotText}>Quên mật khẩu?</Text>
-          </TouchableOpacity>
 
           {/* Remember switch */}
           <View style={styles.rememberRow}>

@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  StyleSheet,
+  ActivityIndicator,
   Alert,
   FlatList,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LinearGradient } from "expo-linear-gradient";
 
 type FamilyMember = {
   id: number;
@@ -53,7 +53,7 @@ export default function MembershipScreen() {
     if (!userId) return;
     setLoading(true);
     try {
-      await fetch(`http://192.168.1.9:3000/api/users/update-role`, {
+      await fetch(`https://visionaid-be.onrender.com/api/users/update-role`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, role }),
@@ -75,7 +75,7 @@ export default function MembershipScreen() {
 
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.1.9:3000/api/family/add", {
+      const response = await fetch("https://visionaid-be.onrender.com/api/family/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,7 +106,7 @@ export default function MembershipScreen() {
   const fetchFamilyList = async () => {
     if (!userId) return;
     try {
-      const response = await fetch(`http://192.168.1.9:3000/api/family/list/${userId}`);
+      const response = await fetch(`https://visionaid-be.onrender.com/api/family/list/${userId}`);
       const result = await response.json();
       if (result.success) setFamilyList(result.family);
     } catch (err) {
